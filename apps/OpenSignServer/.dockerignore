@@ -1,2 +1,17 @@
 node_modules
 npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+pdfFile/
+spec/
+coverage/
+.nyc_output/
+build/
+dist/

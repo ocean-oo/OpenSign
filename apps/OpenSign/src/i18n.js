@@ -9,7 +9,9 @@ i18n
   .use(initReactI18next)
   .init({
     backend: {
-      loadPath: "/locales/{{lng}}/{{ns}}.json"
+      // BASE_URL is baked at build time ("/" or "/docsign"); ensure the
+      // trailing slash so locales resolve behind a subpath reverse proxy.
+      loadPath: `${(import.meta.env.BASE_URL || "/").replace(/\/?$/, "/")}locales/{{lng}}/{{ns}}.json`
     },
     fallbackLng: "en", // Fallback to English if no other language is detected
     detection: {

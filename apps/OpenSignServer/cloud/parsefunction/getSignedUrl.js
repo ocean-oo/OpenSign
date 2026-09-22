@@ -180,9 +180,15 @@ export async function validateSignedLocalUrl(signedUrl) {
     const secretKey = process.env.MASTER_KEY;
     // Now verify the token (validate signature and expiration automatically)
     const decoded = jwt.verify(token, secretKey);
-    // Check if the file URL in the JWT matches the requested file URL
+    // Compare only the path from /files/ onward so reverse-proxy prefix
+    // rewrites (e.g. /docsign subpath) can't invalidate the token.
+    const normalizeFilePath = (u) => {
+      const noQuery = String(u).split('?')[0];
+      const i = noQuery.indexOf('/files/');
+      return i >= 0 ? noQuery.slice(i) : noQuery;
+    };
     const fileUrl = signedUrl.split('?')[0];
-    if (decoded.fileUrl !== fileUrl) {
+    if (normalizeFilePath(decoded.fileUrl) !== normalizeFilePath(fileUrl)) {
       throw new Error('Invalid file URL in token.');
     }
     // If the token is valid and not expired, return the file URL

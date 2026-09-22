@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Parse from "parse";
 import { buildDownloadFilename } from "../../utils";
+import { basePath } from "../../constant/Utils";
 import { useTranslation } from "react-i18next";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
@@ -59,7 +60,7 @@ const FilenameFormatSelector = ({ fileNameFormat, setFileNameFormat }) => {
       <label className="text-[14px] mb-[0.7rem] font-medium">
         {t("document-download-filename-format")}
         <span className="text-sm">
-          <a data-tooltip-id="filename-tooltip" className="ml-1" href="/">
+          <a data-tooltip-id="filename-tooltip" className="ml-1" href={basePath() + "/"}>
             <sup>
               <i className="fa-light fa-question rounded-full border-[#33bbff] text-[#33bbff] text-[13px] border-[1px] py-[1.5px] px-[4px]"></i>
             </sup>

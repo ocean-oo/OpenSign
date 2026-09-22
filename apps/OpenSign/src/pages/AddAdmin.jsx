@@ -16,7 +16,7 @@ import { emailRegex } from "../constant/const";
 
 const AddAdmin = () => {
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -294,7 +294,7 @@ const AddAdmin = () => {
                       aria-hidden="true"
                       className="fa-brands fa-discord ml-1"
                     ></i>
-                    {/* <span className="fa-sr-only">OpenSign&apos;s Discord</span> */}
+                    {/* <span className="fa-sr-only">TNI DocSign Discord</span> */}
                   </NavLink>
                   <div className="px-6 py-3 text-xs">
                     <label className="block ">

@@ -51,7 +51,7 @@ function Form() {
 
 const Forms = (props) => {
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const { t } = useTranslation();
   const abortController = new AbortController();
   const inputFileRef = useRef(null);
@@ -70,7 +70,7 @@ const Forms = (props) => {
     file: "",
     remindOnceInEvery: 5,
     autoreminder: false,
-    IsEnableOTP: "false",
+    IsEnableOTP: "true",
     IsTourEnabled: "false",
     NotifyOnSignatures: "",
     Bcc: [],
@@ -445,7 +445,8 @@ const Forms = (props) => {
           object.set("PenColors", selectedColors);
 
             object.set("AllowModifications", false);
-            object.set("IsEnableOTP", false);
+            // Policy: OTP is always enforced on signing requests (except self-sign which skips this block)
+            object.set("IsEnableOTP", true);
             if (formData.NotifyOnSignatures !== undefined) {
               object.set("NotifyOnSignatures", formData.NotifyOnSignatures);
             }
@@ -523,7 +524,7 @@ const Forms = (props) => {
             NotifyOnSignatures: notifySign,
             remindOnceInEvery: 5,
             autoreminder: false,
-            IsEnableOTP: "false",
+            IsEnableOTP: "true",
             IsTourEnabled: istourenabled,
             RedirectUrl: "",
             AllowModifications: false,
@@ -616,7 +617,7 @@ const Forms = (props) => {
       file: "",
       remindOnceInEvery: 5,
       autoreminder: false,
-      IsEnableOTP: "false",
+      IsEnableOTP: "true",
       IsTourEnabled: istourenabled,
       NotifyOnSignatures: notifySign,
       RedirectUrl: "",

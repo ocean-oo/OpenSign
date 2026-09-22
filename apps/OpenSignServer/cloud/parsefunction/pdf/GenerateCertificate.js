@@ -104,11 +104,12 @@ export default async function GenerateCertificate(docDetails) {
     borderColor: borderColor,
     borderWidth: 1,
   });
+  // Brand logo (640x256, aspect 2.5:1) — keep aspect, stay inside top border (y=827).
   page.drawImage(pngImage, {
     x: 30,
     y: 790,
-    width: 100,
-    height: 25,
+    width: 80,
+    height: 32,
   });
 
   page.drawText(generatedOn, {

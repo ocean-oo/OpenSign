@@ -50,6 +50,9 @@ import {
   getOriginalWH,
   handleCheckResponse,
   convertJpegToPng,
+  appOrigin,
+  appRouteSegments,
+  basePath,
 } from "../constant/Utils";
 import Header from "../components/pdf/PdfHeader";
 import RenderPdf from "../components/pdf/RenderPdf";
@@ -85,7 +88,7 @@ function PdfRequestFiles(
   const defaultSignImg = useSelector((state) => state.widget.defaultSignImg);
   const myInitial = useSelector((state) => state.widget.myInitial);
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const [pdfDetails, setPdfDetails] = useState([]);
   const [signedSigners, setSignedSigners] = useState([]);
   const [unsignedSigners, setUnSignedSigners] = useState([]);
@@ -169,15 +172,15 @@ function PdfRequestFiles(
   let sendmail;
   let getDocId = "";
   let contactBookId = "";
-  const route =
-    window.location.pathname;
   const getQuery =
     window.location?.search?.split("?"); //['','sendmail=false']
   if (getQuery) {
     sendmail = getQuery?.[1]?.split("=")[1]; //false
   }
 
-  const routeId = route && route?.split("/"); // ['', 'load', 'recipientSignPdf', ':docId', ':contactBookId']
+  // Route segments with the deploy subpath stripped (see appRouteSegments),
+  // so indices below hold on both root ("/load/...") and subpath ("/docsign/load/...") deploys.
+  const routeId = appRouteSegments(); // ['', 'load', 'recipientSignPdf', ':docId', ':contactBookId']
   if (routeId && routeId.length > 4) {
     // this condition will be occur only in guest flow in which load routeId will be include
     isGuestSignFlow = true;
@@ -853,7 +856,7 @@ function PdfRequestFiles(
                           sessionToken: localStorage.getItem("accesstoken")
                         };
                         const objectId = user?.objectId;
-                        const hostUrl = window.location.origin;
+                        const hostUrl = appOrigin();
                         //encode this url value `${pdfDetails?.[0].objectId}/${user.Email}/${objectId}` to base64 using `btoa` function
                         let encodeBase64;
                         if (objectId) {
@@ -944,7 +947,7 @@ function PdfRequestFiles(
                       : "";
                     const params =
                           `docid=${updatedDoc.updatedPdfDetails[0].objectId}&docurl=${encodeURIComponent(url)}${isCompleted}${fileAdapter}`;
-                    window.location.href = `/success?${params}`;
+                    window.location.href = `${basePath()}/success?${params}`;
                   }
                 } else {
                   setIsUiLoading(false);

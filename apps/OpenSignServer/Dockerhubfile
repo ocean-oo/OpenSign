@@ -1,9 +1,12 @@
 # Use an official Node runtime as the base image
 FROM node:22.14.0
 
-# Install LibreOffice for DOCX to PDF conversions
+# Install LibreOffice for DOCX to PDF conversions.
+# --no-install-recommends drops help packs/GUI extras (~hundreds of MB);
+# fonts-liberation/fonts-dejavu are re-added explicitly so converted
+# documents keep correct metrics (Calibri/Times fallbacks).
 RUN apt-get update \
-  && apt-get install -y libreoffice \
+  && apt-get install -y --no-install-recommends libreoffice fonts-liberation fonts-dejavu \
   && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory inside the container
@@ -12,8 +15,9 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json first to leverage Docker cache
 COPY apps/OpenSignServer/package*.json ./
 
-# Install application dependencies
-RUN npm install
+# Reproducible install, production deps only (drops eslint/jasmine/nodemon/...).
+# --no-audit/--no-fund skips network calls that only slow the build.
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # If you have native dependencies, you'll need extra tools. Uncomment the following line if needed.
 # RUN apk add --no-cache make gcc g++ python3

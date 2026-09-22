@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
+    // Subpath support behind reverse proxies: docker build --build-arg BASENAME=/opensign
+    base: process.env.BASENAME || "/",
     plugins: [
       react(),
       svgr() // Transform SVGs into React components

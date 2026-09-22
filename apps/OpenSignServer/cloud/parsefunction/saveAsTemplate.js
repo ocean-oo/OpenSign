@@ -28,7 +28,7 @@ export default async function saveAsTemplate(request) {
       templateCls.set('AutomaticReminders', _docRes?.AutomaticReminders || false);
       templateCls.set('ExtUserPtr', _docRes?.ExtUserPtr);
       templateCls.set('CreatedBy', _docRes?.CreatedBy);
-      templateCls.set('IsEnableOTP', _docRes?.IsEnableOTP === true ? true : false);
+      templateCls.set('IsEnableOTP', true);
       templateCls.set('IsTourEnabled', _docRes?.IsTourEnabled === true ? true : false);
       templateCls.set('AllowModifications', _docRes?.AllowModifications || false);
       templateCls.set('SenderName', _docRes?.SenderName);

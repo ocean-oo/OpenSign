@@ -1,0 +1,26 @@
+# Root build context dockerignore — Docker only reads THIS file (context root),
+# app-level .dockerignore files are NOT applied. Keep secrets OUT of images:
+# real credentials live only in deploy/.env at deploy time (git-ignored).
+
+node_modules
+.git
+.env
+.env.*
+deploy/.env
+**/*.pfx
+**/*.p12
+**/*.pem
+**/*.key
+cert/
+apps/OpenSignServer/pdfFile/
+apps/OpenSignServer/spec/
+apps/OpenSign/build/
+apps/OpenSign/coverage/
+# Docs/CI/editor junk is never needed inside images (context is already small,
+# these just keep it from growing back):
+**/*.md
+.github/
+.vscode/
+.idea/
+*.log
+npm-debug.log*

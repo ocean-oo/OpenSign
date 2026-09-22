@@ -43,6 +43,8 @@ import {
   defaultMailSubject,
   flattenPdf,
   base64ToArrayBuffer,
+  basePath,
+  appOrigin,
 } from "../constant/Utils";
 import RenderPdf from "../components/pdf/RenderPdf";
 import { useNavigate } from "react-router";
@@ -1165,7 +1167,7 @@ function PlaceHolderSign() {
     let signerMail = signersdata;
     for (let i = 0; i < signerMail.length; i++) {
       const objectId = signerMail[i].objectId;
-      const hostUrl = window.location.origin;
+      const hostUrl = appOrigin();
       const sendMail = false;
       //encode this url value `${pdfDetails?.[0].objectId}/${signerMail[i].Email}/${objectId}` to base64 using `btoa` function
       const encodeBase64 = btoa(
@@ -2007,7 +2009,7 @@ function PlaceHolderSign() {
                               components={{
                                 1: (
                                   <a
-                                    href="/profile"
+                                    href={basePath() + "/profile"}
                                     className="text-blue-700 underline cursor-pointer"
                                   />
                                 )

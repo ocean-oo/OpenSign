@@ -41,7 +41,7 @@ export default async function createDuplicate(request) {
         newTemplate.set('SendInOrderStrict', _templateRes?.SendInOrderStrict || false);
         newTemplate.set('AutomaticReminders', _templateRes?.AutomaticReminders || false);
         newTemplate.set('RemindOnceInEvery', _templateRes?.RemindOnceInEvery || 5);
-        newTemplate.set('IsEnableOTP', _templateRes?.IsEnableOTP || false);
+        newTemplate.set('IsEnableOTP', true);
         newTemplate.set('AllowModifications', _templateRes?.AllowModifications || false);
         newTemplate.set('Signers', signers);
         newTemplate.set('ExtUserPtr', {

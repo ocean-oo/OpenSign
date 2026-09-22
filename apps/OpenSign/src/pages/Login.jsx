@@ -16,15 +16,17 @@ import { showTenant } from "../redux/reducers/ShowTenant";
 import {
   getAppLogo,
   saveLanguageInLocal,
-  usertimezone
+  usertimezone,
+  appOrigin
 } from "../constant/Utils";
 import Loader from "../primitives/Loader";
 import { useTranslation } from "react-i18next";
 import SelectLanguage from "../components/pdf/SelectLanguage";
+import { isKeycloakEnabled, getKeycloak, logoutKeycloak } from "../utils/keycloak";
 
 function Login() {
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,6 +144,19 @@ function Login() {
       return;
     }
     await handleLogin();
+  };
+
+  const ssoEnabled = isKeycloakEnabled();
+  const handleSsoLogin = async () => {
+    try {
+      setState({ ...state, loading: true });
+      const kc = getKeycloak();
+      await kc.init({ onLoad: "check-sso", pkceMethod: "S256", checkLoginIframe: false });
+      await kc.login({ redirectUri: appOrigin() + "/keycloak-callback" });
+    } catch (err) {
+      console.error("SSO login err", err);
+      showToast("danger", t("sso-login-failed"));
+    }
   };
 
   const setThirdpartyLoader = (value) => {
@@ -326,6 +341,7 @@ function Login() {
   const logOutUser = async () => {
     setIsModal(false);
     try {
+      await logoutKeycloak(appOrigin() + "/");
       await Parse.User.logOut();
     } catch (err) {
       console.log("Err while logging out", err);
@@ -516,6 +532,16 @@ function Login() {
                       >
                         {state.loading ? t("loading") : t("login")}
                       </button>
+                      {ssoEnabled && (
+                        <button
+                          type="button"
+                          className="op-btn op-btn-secondary"
+                          disabled={state.loading}
+                          onClick={handleSsoLogin}
+                        >
+                          {t("sso-login")}
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>

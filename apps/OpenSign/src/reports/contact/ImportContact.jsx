@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import Parse from "parse";
 import { emailRegex } from "../../constant/const";
+import { basePath } from "../../constant/Utils";
 import { withSessionValidation } from "../../utils";
 
 const ImportContact = ({ setLoader, onImport, showAlert }) => {
@@ -233,7 +234,7 @@ const ImportContact = ({ setLoader, onImport, showAlert }) => {
         <p className="mt-1 ml-2 text-[11px] text-gray-600">
           {t("import-guideline")}{" "}
           <a
-            href="/sample_contacts.csv"
+            href={basePath() + "/sample_contacts.csv"}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline cursor-pointer"

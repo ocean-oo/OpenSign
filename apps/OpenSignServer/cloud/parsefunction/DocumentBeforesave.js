@@ -26,6 +26,12 @@ async function DocumentBeforesave(request) {
     if (AutoReminder && reminderCount > 15) {
       throw new Parse.Error(Parse.Error.INVALID_QUERY, 'only 15 reminder allowed');
     }
+    // Policy: OTP is always enforced on signing requests (except self-sign).
+    // ENFORCE_OTP=false only for local/dev escape hatch; defaults to true.
+    const enforceOtp = (process.env.ENFORCE_OTP || 'true').toLowerCase() !== 'false';
+    if (enforceOtp && !request?.object?.get('IsSignyourself')) {
+      request?.object?.set('IsEnableOTP', true);
+    }
   }
   try {
     // below code is used to update document when user sent document or self signed

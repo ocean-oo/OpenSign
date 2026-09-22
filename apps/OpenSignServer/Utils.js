@@ -17,7 +17,7 @@ dotenv.config({ quiet: true });
 
 export const cloudServerUrl = 'http://localhost:8080/app';
 export const serverAppId = process.env.APP_ID || 'opensign';
-export const appName = 'OpenSign™';
+export const appName = 'TNI DocSign';
 export const prefillDraftDocWidget = ['date', 'textbox', 'checkbox', 'radio button', 'image'];
 export const prefillDraftTemWidget = [
   'date',
@@ -645,6 +645,17 @@ export const formatTimeInTimezone = (date, timezone) => {
   return generatedDate;
 };
 
+// Public base URL for brand assets served by the frontend (e.g. logo in emails).
+// Prefers PUBLIC_URL, falls back to the origin of SERVER_URL.
+function publicOrigin() {
+  const raw = process.env.PUBLIC_URL || process.env.SERVER_URL || '';
+  const m = raw.match(/^(https?:\/\/[^/]+)/);
+  return m ? m[1] : '';
+}
+// Brand logo <img> for emails. Served from the frontend: <PUBLIC_URL>/tni-logo.png
+export const brandLogoImg = (style = 'padding:20px') =>
+  `<img src='${publicOrigin()}/tni-logo.png' height='50' style='${style}' alt='TNI DocSign' />`;
+
 // `getSecureUrl` is used to return local secure url if local files
 export const getSecureUrl = url => {
   const fileUrl = new URL(url)?.pathname?.includes('/files/');
@@ -669,7 +680,7 @@ export const mailTemplate = param => {
   const themeColor = '#47a3ad';
   const subject = `${param.senderName} has requested you to sign "${param.title}"`;
   const AppName = appName;
-  const logo = `<img src='https://qikinnovation.ams3.digitaloceanspaces.com/logo.png' height='50' />`;
+  const logo = brandLogoImg('');
 
   const body =
     "<html><head><meta http-equiv='Content-Type' content='text/html;charset=UTF-8' /></head><body><div style='background-color:#f5f5f5;padding:20px'><div style='background:white;padding-bottom:20px'><div style='padding:10px'>" +

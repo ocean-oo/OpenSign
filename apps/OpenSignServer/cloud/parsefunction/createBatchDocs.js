@@ -98,6 +98,9 @@ async function deductcount(docsCount, extUserId) {
 }
 async function sendMail(document, publicUrl) {
   const baseUrl = new URL(publicUrl);
+  // Keep origin + subpath (e.g. https://host/docsign). Using .origin alone
+  // drops the subpath and guest signing links 404 behind a shared proxy.
+  const hostUrl = baseUrl.origin + baseUrl.pathname.replace(/\/+$/, '');
   const timeToCompleteDays = document?.TimeToCompleteDays || 15;
   const ExpireDate = new Date(document.createdAt);
   ExpireDate.setDate(ExpireDate.getDate() + timeToCompleteDays);
@@ -135,7 +138,6 @@ async function sendMail(document, publicUrl) {
         'X-Parse-Application-Id': appId,
       };
       const objectId = signerMail[i]?.signerObjId;
-      const hostUrl = baseUrl.origin;
       let encodeBase64;
       let existSigner = {};
       if (objectId) {
@@ -273,7 +275,7 @@ async function startBulkSendInBackground(userId, Documents, Ip, parseConfig, typ
         TimeToCompleteDays: x.TimeToCompleteDays ? parseInt(x.TimeToCompleteDays) : 15,
         OriginIp: Ip,
         DocSentAt: { __type: 'Date', iso: isoDate },
-        IsEnableOTP: x?.IsEnableOTP || false,
+        IsEnableOTP: true,
         IsTourEnabled: x?.IsTourEnabled || false,
         AllowModifications: x?.AllowModifications || false,
         ...(x?.SenderName ? { SenderName: x?.SenderName } : {}),
@@ -327,8 +329,9 @@ export default async function createBatchDocs(request) {
   const Documents = JSON.parse(strDocuments);
 
   const Ip = request?.headers?.['x-real-ip'] || '';
-  // Use the browser origin so signing links keep the custom domain.
-  let publicUrl = request.headers.origin || request.headers.public_url;
+  // Prefer the server-built public_url (origin + subpath). The browser `origin`
+  // header never contains a path, so it yields broken links on subpath deploys.
+  let publicUrl = request.headers.public_url || request.headers.origin;
   const parseConfig = {
     baseURL: serverUrl,
     headers: {

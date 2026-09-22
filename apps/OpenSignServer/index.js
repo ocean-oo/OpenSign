@@ -172,7 +172,10 @@ app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(function (req, res, next) {
   req.headers['x-real-ip'] = getUserIP(req);
-  const publicUrl = 'https://' + req?.get('host');
+  // PUBLIC_URL includes the subpath the app is served from (e.g. https://host/docsign).
+  // Cloud functions build frontend links (signing/decline/notify mails) from this
+  // header — deriving it from Host alone drops the subpath and mail links 404.
+  const publicUrl = (process.env.PUBLIC_URL || '').replace(/\/+$/, '') || 'https://' + req?.get('host');
   req.headers['public_url'] = publicUrl;
   next();
 });
@@ -192,10 +195,17 @@ function getUserIP(request) {
 app.use(async function (req, res, next) {
   const isFilePath = req.path?.includes('/files/') || false;
   if (isFilePath && req.method.toLowerCase() === 'get') {
-    const serverUrl = new URL(process.env.SERVER_URL);
-    const origin = serverUrl.pathname === '/api/app' ? serverUrl.origin + '/api' : serverUrl.origin;
-    const fileUrl = origin + req.originalUrl;
-    const params = fileUrl?.split('?')?.[1];
+    // Rebuild the public file URL the JWT was signed over: SERVER_URL + path-after-mount.
+    // Signed URLs look like <SERVER_URL>/files/<name>?token=... (e.g. SERVER_URL =
+    // https://host/docsign/api/app). The old code only handled root deploys
+    // (pathname === '/api/app') and broke every subpath deploy (/docsign/...) with
+    // 400 unauthorized on each PDF fetch because the rebuilt URL never matched.
+    const serverUrlStr = (process.env.SERVER_URL || '').replace(/\/$/, '');
+    const mountPath = process.env.PARSE_MOUNT || '/app';
+    const [pathOnly, query] = (req.originalUrl || '').split('?');
+    const suffix = pathOnly.startsWith(mountPath) ? pathOnly.slice(mountPath.length) : pathOnly;
+    const fileUrl = query ? `${serverUrlStr}${suffix}?${query}` : `${serverUrlStr}${suffix}`;
+    const params = query;
     if (params) {
       const fileRes = await validateSignedLocalUrl(fileUrl);
       if (fileRes === 'Unauthorized') {

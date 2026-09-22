@@ -21,11 +21,22 @@ RUN chmod +x entrypoint.sh
 # Define environment variables if needed
 ENV NODE_ENV=production
 ENV GENERATE_SOURCEMAP=false
+# Subpath the app is served from (e.g. /docsign). Build with:
+#   docker buildx build --build-arg BASENAME=/docsign ...
+ARG BASENAME=/
+ENV BASENAME=$BASENAME
+# Bake the subpath BEFORE building so the router basename works even if
+# env.js is ever unreachable (vite `define` only sees .env files, not ENV).
+RUN echo "REACT_APP_BASENAME=$(echo "${BASENAME}" | sed 's:/*$::')" > .env.production.local
 # build
 RUN npm run build
 
-# Inject env.js loader into index.html
-RUN sed -i '/<head>/a\<script src="/env.js"></script>' build/index.html
+# Inject env.js loader with an ABSOLUTE subpath-aware src.
+# A relative "./env.js" resolves against nested routes (/docsign/login/<b64>
+# -> /docsign/login/env.js -> index.html fallback -> browser refuses it due
+# to nosniff), leaving RUNTIME_ENV undefined and breaking basename/API URL.
+RUN ENVJS_SRC="$(echo "${BASENAME}" | sed 's:/*$::')/env.js"; \
+  sed -i "/<head>/a\\<script src=\"${ENVJS_SRC}\"></script>" build/index.html
 
 # Make port 3000 available to the world outside this container
 EXPOSE 3000

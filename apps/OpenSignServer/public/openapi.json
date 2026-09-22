@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OpenSign API v1",
-    "description": "This is API documentation for OpenSign API v1 based on the OpenAPI 3.1 specification. \n\nSome useful links:\n- [Official Website](https://www.opensignlabs.com)\n- [Github repo](https://github.com/opensignlabs/opensign)",
+    "title": "TNI DocSign API v1",
+    "description": "API documentation for TNI DocSign API v1 (OpenAPI 3.1).",
     "termsOfService": "http://www.opensignlabs.com/terms/",
     "contact": {
       "email": "contact@opensignlabs.com"
@@ -13,8 +13,8 @@
     },
     "version": "1.0.0"
   },
-  "externalDocs": {
-    "description": "Find out more about OpenSign",
+    "externalDocs": {
+      "description": "Find out more about TNI DocSign",
     "url": "http://docs.opensignlabs.com"
   },
   "servers": [
@@ -24,8 +24,8 @@
   ],
   "tags": [
     {
-      "name": "OpenSign",
-      "description": "OpenSource DocuSign alternative",
+      "name": "TNI DocSign",
+      "description": "Document signing operations",
       "externalDocs": {
         "description": "Find out more",
         "url": "http://www.opensignlabs.com"

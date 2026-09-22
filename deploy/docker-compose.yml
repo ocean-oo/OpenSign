@@ -1,0 +1,83 @@
+services:
+  mongo:
+    image: mongo:7.0.16
+    container_name: docsign-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    # No public ports: database is only reachable inside the compose network
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  server:
+    image: qceank/docsign_custom-server:${SERVER_TAG:-latest}
+    container_name: docsign-server
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    # Publish host ports so a shared/external reverse proxy can reach the app.
+    # Host port 8081 avoids clashing with Keycloak or other stacks on :8080.
+    ports:
+      - "8081:8080"
+    volumes:
+      - opensign-files:/usr/src/app/files
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      # Overridable: set explicit SERVER_URL/PUBLIC_URL in .env for subpath
+      # deploys (e.g. https://domain/docsign/api/app). Falls back to HOST_URL.
+      - SERVER_URL=${SERVER_URL:-${HOST_URL:-https://localhost:3001}/api/app}
+      - PUBLIC_URL=${PUBLIC_URL:-${HOST_URL:-https://localhost:3001}}
+    networks:
+      - app-network
+
+  client:
+    image: qceank/docsign_custom-client:${CLIENT_TAG:-latest}
+    container_name: docsign-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: docsign-caddy
+    restart: unless-stopped
+    depends_on:
+      - client
+      - server
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - HOST_URL=${HOST_URL:-localhost:3001}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  opensign-files:
+  caddy_data:
+  caddy_config:

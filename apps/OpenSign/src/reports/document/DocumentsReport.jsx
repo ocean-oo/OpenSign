@@ -22,7 +22,9 @@ import {
   createDocument,
   getSignerEmail,
   defaultMailBody,
-  defaultMailSubject
+  defaultMailSubject,
+  basePath,
+  appOrigin,
 } from "../../constant/Utils";
 import BulkSendUi from "../../components/bulksend/BulkSendUi";
 import Loader from "../../primitives/Loader";
@@ -43,7 +45,7 @@ const DocumentsReport = (props) => {
   const titleRef = useRef(null);
   const titleElement = useElSize(titleRef);
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -398,7 +400,7 @@ const DocumentsReport = (props) => {
   };
   const handleShare = (item) => {
     setActLoader({ [item.objectId]: true });
-    const host = window.location.origin;
+    const host = appOrigin();
     const sendMail = item?.SendMail || false;
     const getUrl = (x) => {
       //encode this url value `${item.objectId}/${x.Email}/${x.objectId}` to base64 using `btoa` function
@@ -539,7 +541,7 @@ const DocumentsReport = (props) => {
       month: "long",
       year: "numeric"
     });
-    const signPdf = `${window.location.origin}/login/${encodeBase64}`;
+    const signPdf = `${appOrigin()}/login/${encodeBase64}`;
     const variables = {
       document_title: doc.Name,
       note: doc?.Note || "",
@@ -571,7 +573,7 @@ const DocumentsReport = (props) => {
       month: "long",
       year: "numeric"
     });
-    const signPdf = `${window.location.origin}/login/${encodeBase64}`;
+    const signPdf = `${appOrigin()}/login/${encodeBase64}`;
     const variables = {
       document_title: doc.Name,
       note: doc?.Note || "",
@@ -618,7 +620,7 @@ const DocumentsReport = (props) => {
       month: "long",
       year: "numeric"
     });
-    const signPdf = `${window.location.origin}/login/${encodeBase64}`;
+    const signPdf = `${appOrigin()}/login/${encodeBase64}`;
     const variables = {
       document_title: doc.Name,
       note: doc?.Note || "",
@@ -882,7 +884,7 @@ const DocumentsReport = (props) => {
         docId: item.objectId
       });
       if (res) {
-        openInNewTab(`/placeHolderSign/${res.objectId}`, "_self");
+        openInNewTab(`${basePath()}/placeHolderSign/${res.objectId}`, "_self");
       }
     } catch (err) {
       handleCloseModal();
@@ -1003,7 +1005,7 @@ const DocumentsReport = (props) => {
     let signerMail = signerList;
     for (let i = 0; i < signerMail.length; i++) {
       const objectId = signerMail[i].objectId;
-      const hostUrl = window.location.origin;
+      const hostUrl = appOrigin();
       const sendMail = false;
       //encode this url value `${documentId}/${signerMail[i].Email}/${objectId}` to base64 using `btoa` function
       const encodeBase64 = btoa(
@@ -1945,7 +1947,7 @@ const DocumentsReport = (props) => {
                   components={{
                     1: (
                       <a
-                        href="/profile"
+                        href={basePath() + "/profile"}
                         className="text-blue-700 underline cursor-pointer"
                       />
                     )

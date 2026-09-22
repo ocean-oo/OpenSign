@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { emailRegex } from "../constant/const";
 const UpdateExistUserAdmin = () => {
   const appName =
-    "OpenSign™";
+    "TNI DocSign";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formdata, setFormdata] = useState({ email: "", masterkey: "" });
@@ -106,7 +106,7 @@ const UpdateExistUserAdmin = () => {
                       aria-hidden="true"
                       className="fa-brands fa-discord ml-1"
                     ></i>
-                    {/* <span className="fa-sr-only">OpenSign&apos;s Discord</span> */}
+                    {/* <span className="fa-sr-only">TNI DocSign Discord</span> */}
                   </NavLink>
                   <div className="px-6 py-3 text-xs">
                     <label>

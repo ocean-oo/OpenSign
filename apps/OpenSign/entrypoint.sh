@@ -8,7 +8,7 @@ echo "Generating runtime env file at $ENV_FILE..."
 echo "window.RUNTIME_ENV = {" > $ENV_FILE
 
 # List of keys to include
-RUNTIME_KEYS="REACT_APP_SERVERURL"
+RUNTIME_KEYS="REACT_APP_SERVERURL REACT_APP_ENABLE_KEYCLOAK REACT_APP_KEYCLOAK_URL REACT_APP_KEYCLOAK_REALM REACT_APP_KEYCLOAK_CLIENT_ID REACT_APP_BASENAME"
 
 for key in $RUNTIME_KEYS; do
   # First check docker env (-e), fallback to .env file

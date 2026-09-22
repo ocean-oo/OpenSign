@@ -14,7 +14,9 @@ export default async function createDocumentFromApp(request) {
   const SentToOthers = doc.SentToOthers !== undefined ? doc.SentToOthers : false;
   const SendinOrder = doc.SendinOrder !== undefined ? doc.SendinOrder : false;
   const SendInOrderStrict = doc.SendInOrderStrict !== undefined ? !!doc.SendInOrderStrict : false;
-  const IsEnableOTP = doc?.IsEnableOTP !== undefined ? doc?.IsEnableOTP : false;
+  // Policy: OTP always enforced (except self-sign which doesn't go through this path)
+  const enforceOtp = (process.env.ENFORCE_OTP || 'true').toLowerCase() !== 'false';
+  const IsEnableOTP = enforceOtp ? true : doc?.IsEnableOTP !== undefined ? doc?.IsEnableOTP : false;
   const IsTourEnabled = doc?.IsTourEnabled !== undefined ? doc?.IsTourEnabled : false;
   const AllowModifications =
     doc?.AllowModifications !== undefined ? doc?.AllowModifications : false;
