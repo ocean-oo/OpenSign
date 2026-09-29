@@ -65,6 +65,13 @@ import updateEmailTemplates from './parsefunction/updateEmailTemplates.js';
 import triggerEvent from './parsefunction/triggerEvent.js';
 import setWidgetPreferences from './parsefunction/setWidgetPreferences.js';
 import createDocumentFromApp from './parsefunction/createDocumentFromApp.js';
+import {
+  caInitiate,
+  caStatus,
+  caCancel,
+  caComplete,
+  caCallback
+} from './parsefunction/caFunctions.js';
 
 // This afterSave function triggers after an object is added or updated in the specified class, allowing for post-processing logic.
 Parse.Cloud.afterSave('contracts_Document', DocumentAftersave);
@@ -140,3 +147,8 @@ Parse.Cloud.define('updateemailtemplates', updateEmailTemplates);
 Parse.Cloud.define('triggerevent', triggerEvent);
 Parse.Cloud.define('setwidgetpreferences', setWidgetPreferences);
 Parse.Cloud.define('createdocumentfromapp', createDocumentFromApp);
+Parse.Cloud.define('caInitiate', caInitiate);
+Parse.Cloud.define('caStatus', caStatus);
+Parse.Cloud.define('caCancel', caCancel);
+Parse.Cloud.define('caComplete', caComplete);
+Parse.Cloud.define('caCallback', caCallback);
