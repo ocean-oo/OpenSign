@@ -26,6 +26,16 @@ async function DocumentBeforesave(request) {
     if (AutoReminder && reminderCount > 15) {
       throw new Parse.Error(Parse.Error.INVALID_QUERY, 'only 15 reminder allowed');
     }
+    // Default ACL: client-created documents carry no _acl, which would
+    // fail the read-access check in getDocument for OTP documents.
+    // Grant the creator read/write so ownership checks stay consistent.
+    const createdBy = request?.object?.get('CreatedBy');
+    if (!request?.object?.getACL() && createdBy?.id) {
+      const acl = new Parse.ACL();
+      acl.setReadAccess(createdBy.id, true);
+      acl.setWriteAccess(createdBy.id, true);
+      request.object.setACL(acl);
+    }
     // Policy: OTP is always enforced on signing requests (except self-sign).
     // ENFORCE_OTP=false only for local/dev escape hatch; defaults to true.
     const enforceOtp = (process.env.ENFORCE_OTP || 'true').toLowerCase() !== 'false';

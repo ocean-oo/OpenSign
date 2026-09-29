@@ -14,7 +14,7 @@ import FSFilesAdapter from '@parse/fs-files-adapter';
 import { app as customRoute } from './cloud/customRoute/customApp.js';
 import { exec } from 'child_process';
 import { createTransport } from 'nodemailer';
-import { appName, cloudServerUrl, serverAppId, smtpenable, smtpsecure, useLocal } from './Utils.js';
+import { appName, brandLogoImg, cloudServerUrl, serverAppId, smtpenable, smtpsecure, useLocal } from './Utils.js';
 import { SSOAuth } from './auth/authadapter.js';
 import runDbMigrations from './migrationdb/index.js';
 import { validateSignedLocalUrl } from './cloud/parsefunction/getSignedUrl.js';
@@ -148,6 +148,10 @@ export const config = {
               },
             },
             apiCallback: async ({ payload, locale }) => {
+              // Inject brand logo (absolute URL, subpath-safe) into system mails.
+              if (payload?.html && String(payload.html).includes('<!--BRAND_LOGO-->')) {
+                payload.html = String(payload.html).replace('<!--BRAND_LOGO-->', brandLogoImg());
+              }
               if (mailgunClient) {
                 const mailgunPayload = ApiPayloadConverter.mailgun(payload);
                 await mailgunClient.messages.create(mailgunDomain, mailgunPayload);

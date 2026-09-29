@@ -30,10 +30,16 @@ function DraftDocument() {
       documentData === "Error: Something went wrong!" ||
       (documentData.result && documentData.result.error)
     ) {
-      if (documentData?.result?.error?.includes("deleted")) {
+      const errMsg = documentData?.result?.error || "";
+      if (errMsg.includes("deleted")) {
         setIsLoading({
           isLoader: false,
           message: t("document-deleted")
+        });
+      } else if (errMsg.toLowerCase().includes("access")) {
+        setIsLoading({
+          isLoader: false,
+          message: t("do-not-have-access")
         });
       } else {
         setIsLoading({

@@ -65,7 +65,7 @@ const Forms = (props) => {
     Note: "",
     TimeToCompleteDays: 15,
     SendinOrder: "false",
-    SendInOrderStrict: "false",
+    SendInOrderStrict: "true",
     password: "",
     file: "",
     remindOnceInEvery: 5,
@@ -89,7 +89,7 @@ const Forms = (props) => {
   const [isPassword, setIsPassword] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [isCorrectPass, setIsCorrectPass] = useState(true);
-  const [isAdvanceOpt, setIsAdvanceOpt] = useState(false);
+  const [isAdvanceOpt, setIsAdvanceOpt] = useState(true);
   const [bcc, setBcc] = useState([]);
   const [cc, setCc] = useState([]);
   const pensList = ["blue", "red", "black"];
@@ -129,6 +129,7 @@ const Forms = (props) => {
           ...obj,
           NotifyOnSignatures: true,
           SendinOrder: sendinorder,
+          SendInOrderStrict: "true",
           IsTourEnabled: istourenabled,
         }));
     } finally {
@@ -519,6 +520,7 @@ const Forms = (props) => {
                 : "Please review and sign this document",
             TimeToCompleteDays: 15,
             SendinOrder: sendinorder,
+            SendInOrderStrict: "true",
             password: "",
             file: "",
             NotifyOnSignatures: notifySign,
@@ -613,6 +615,7 @@ const Forms = (props) => {
           : "Please review and sign this document",
       TimeToCompleteDays: 15,
       SendinOrder: sendinorder,
+      SendInOrderStrict: "true",
       password: "",
       file: "",
       remindOnceInEvery: 5,

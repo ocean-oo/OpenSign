@@ -646,15 +646,41 @@ export const formatTimeInTimezone = (date, timezone) => {
 };
 
 // Public base URL for brand assets served by the frontend (e.g. logo in emails).
-// Prefers PUBLIC_URL, falls back to the origin of SERVER_URL.
-function publicOrigin() {
-  const raw = process.env.PUBLIC_URL || process.env.SERVER_URL || '';
-  const m = raw.match(/^(https?:\/\/[^/]+)/);
-  return m ? m[1] : '';
+// Keeps origin + subpath (e.g. https://host/docsign) so /docsign/... assets resolve.
+// Prefers PUBLIC_URL, falls back to SERVER_URL with /api/app suffix stripped.
+function publicBase() {
+  const raw = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
+  if (raw) return raw;
+  const srv = (process.env.SERVER_URL || '').replace(/\/+$/, '');
+  if (!srv) return '';
+  return srv.replace(/\/api(\/app)?$/, '').replace(/\/app$/, '');
 }
-// Brand logo <img> for emails. Served from the frontend: <PUBLIC_URL>/tni-logo.png
-export const brandLogoImg = (style = 'padding:20px') =>
-  `<img src='${publicOrigin()}/tni-logo.png' height='50' style='${style}' alt='TNI DocSign' />`;
+// Path (chốt theo yêu cầu) tới logo mail TNI King Coffee trong frontend public/.
+// File vật lý: apps/OpenSign/public/static/js/assets/images/logo_site_tni.png
+// => serve tại <PUBLIC_URL>/static/js/assets/images/logo_site_tni.png
+export const BRAND_LOGO_PATH = '/static/js/assets/images/logo_site_tni.png';
+export const brandLogoUrl = (baseOverride = '') => {
+  const base = (baseOverride || publicBase()).replace(/\/+$/, '');
+  return `${base}${BRAND_LOGO_PATH}`;
+};
+// Brand logo <img> for emails. `baseOverride` nên truyền request.headers.public_url
+// (chính xác nhất sau proxy); fallback PUBLIC_URL/SERVER_URL giữ subpath.
+export const brandLogoImg = (style = 'padding:20px', baseOverride = '') =>
+  `<img src='${brandLogoUrl(baseOverride)}' height='50' width='125' style='${style}' alt='TNI King Coffee' />`;
+
+// Rewrite legacy logo URLs còn sót trong tenant custom templates / mail cũ:
+// - https://qikinnovation.ams3.digitaloceanspaces.com/logo.png (default OpenSign cũ)
+// - bất kỳ absolute/relative URL nào trỏ tới /tni-logo.png (sai subpath trước đây)
+export const fixLegacyLogoUrls = (html = '', baseOverride = '') => {
+  if (!html || typeof html !== 'string') return html;
+  const fresh = brandLogoUrl(baseOverride);
+  return html
+    .replace(/https:\/\/qikinnovation\.ams3\.digitaloceanspaces\.com\/logo\.png/g, fresh)
+    .replace(
+      /(src\s*=\s*['"])(https?:\/\/[^'"]*?)?\/tni-logo\.png(['"])/g,
+      `$1${fresh}$3`
+    );
+};
 
 // `getSecureUrl` is used to return local secure url if local files
 export const getSecureUrl = url => {

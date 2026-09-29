@@ -4246,7 +4246,7 @@ function _removeWidgetAnnotations(pdfDoc) {
 
 export const mailTemplate = (param) => {
   const appName = "TNI DocSign";
-  const logo = `<div style='padding:10px'><img src='${appOrigin()}/tni-logo.png' height='50' /></div>`;
+  const logo = `<div style='padding:10px'><img src='${appOrigin()}/static/js/assets/images/logo_site_tni.png' height='50' width='125' style='display:block' alt='TNI King Coffee' /></div>`;
 
   const subject = `${param.senderName} has requested you to sign "${param.title}"`;
   const body =

@@ -40,7 +40,7 @@ const EditTemplate = ({
     Description: template?.Description || "",
     SendinOrder: template?.SendinOrder ? `${template?.SendinOrder}` : "false",
     SendInOrderStrict:
-      template?.SendInOrderStrict === true ? "true" : "false",
+      template?.SendInOrderStrict === false ? "false" : "true",
     AutomaticReminders: template?.AutomaticReminders || false,
     RemindOnceInEvery: template?.RemindOnceInEvery || 5,
     IsEnableOTP: template?.IsEnableOTP ? `${template?.IsEnableOTP}` : "true",

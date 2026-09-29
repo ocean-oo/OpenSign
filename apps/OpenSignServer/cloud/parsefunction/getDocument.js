@@ -42,9 +42,18 @@ export default async function getDocument(request) {
                 const acl = res.getACL();
                 if (userId && acl && acl.getReadAccess(userId)) {
                   return document;
-                } else {
-                  return { error: "You don't have access of this document!" };
                 }
+                // Documents created from the client never set an ACL, so
+                // getACL() is null. Fall back to ownership: the creator
+                // (CreatedBy) always keeps read access to their own document.
+                if (userId && !acl) {
+                  const createdById =
+                    res.get('CreatedBy')?.id || document?.CreatedBy?.objectId;
+                  if (createdById && createdById === userId) {
+                    return document;
+                  }
+                }
+                return { error: "You don't have access of this document!" };
               } catch (err) {
                 console.log('err user in not authenticated', err);
                 return { error: "You don't have access of this document!" };

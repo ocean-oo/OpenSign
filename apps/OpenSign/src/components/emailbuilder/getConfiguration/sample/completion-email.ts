@@ -1,4 +1,5 @@
 import { TEditorConfiguration } from "../../documents/editor/core";
+import { appOrigin } from "../../../../constant/Utils";
 
 const getCompletionEmail = (
 ): TEditorConfiguration => {
@@ -14,10 +15,10 @@ const getCompletionEmail = (
                 padding: { top: 24, bottom: 24, right: 24, left: 24 }
               },
               props: {
-                width: null,
+                width: 125,
                 height: 50,
-                url: "https://qikinnovation.ams3.digitaloceanspaces.com/logo.png",
-                alt: "logo",
+                url: `${appOrigin()}/static/js/assets/images/logo_site_tni.png`,
+                alt: "TNI King Coffee",
                 linkHref: null,
                 contentAlignment: "middle"
               }

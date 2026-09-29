@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cloudServerUrl, mailTemplate, replaceMailVaribles, serverAppId } from '../../Utils.js';
+import { cloudServerUrl, fixLegacyLogoUrls, mailTemplate, replaceMailVaribles, serverAppId } from '../../Utils.js';
 import { setDocumentCount } from '../../utils/CountUtils.js';
 
 import crypto from 'crypto';
@@ -153,7 +153,7 @@ async function sendMail(document, publicUrl) {
       let mailSubject = senderObj?.TenantId?.RequestSubject || '';
       let replaceVar;
       if (mailBody && mailSubject) {
-        const replacedRequestBody = mailBody.replace(/"/g, "'");
+        const replacedRequestBody = fixLegacyLogoUrls(mailBody.replace(/"/g, "'"), hostUrl);
         const htmlReqBody =
           "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8' /></head><body>" +
           replacedRequestBody +
