@@ -1,7 +1,17 @@
 # External CA signing — server module
 
-Phase 1: CEO-only, QR + Deeplink, PAdES B-LT target. Mock provider works with
-zero credentials; VNPT/Viettel adapters are stubs until test accounts arrive.
+Phase 1: VNPT-only. Per-document CA designation (inherited from template):
+a placeholder with `signWithCA: true` marks that signer to sign in the CA
+app instead of in-app. CEO-listed accounts (`CA_CEO_USER_IDS`) bypass
+designation. `caComplete` writes `Activity: 'Signed'` + `UserPtr` + CA
+fields so completion counting and strict-order gating work unchanged;
+`signPdf` hard-blocks in-app signing for designated signers. Signer CCCD is
+resolved per-transaction (Contactbook `NationalId` → extended user profile
+→ contactbook by email → `VNPT_CA_USER_ID` fallback).
+
+Phase 1: VNPT-only, PAdES B-LT target. Mock provider works with zero
+credentials; the VNPT adapter implements QD769 v1 (verified live vs UAT);
+Viettel stays stubbed + hidden until test credentials arrive.
 
 ## Files
 

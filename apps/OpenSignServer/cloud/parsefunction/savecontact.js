@@ -6,6 +6,7 @@ export default async function savecontact(request) {
   const tenantId = request.params.tenantId;
   const company = request.params?.company;
   const jobTitle = request.params?.jobTitle;
+  const nationalId = request.params?.nationalId;
 
   if (request.user) {
     const currentUser = request?.user;
@@ -29,6 +30,9 @@ export default async function savecontact(request) {
       }
       if (jobTitle) {
         contactQuery.set('JobTitle', jobTitle);
+      }
+      if (nationalId) {
+        contactQuery.set('NationalId', String(nationalId).trim());
       }
       if (tenantId) {
         contactQuery.set('TenantId', {

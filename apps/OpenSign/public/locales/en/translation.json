@@ -1634,5 +1634,11 @@
   "ca-status-failed": "Could not fetch CA status.",
   "ca-complete-failed": "Could not complete CA signing.",
   "ca-legal-note": "The document code shown here must match the code in the CA app before approving.",
-  "ca-tran-code": "Match this code in the CA app"
+  "ca-tran-code": "Match this code in the CA app",
+  "ca-sign-toggle": "Sign with external CA (VNPT)",
+  "ca-min-widgets": "A CA signer must place at least 2 position boxes.",
+  "ca-must-sign-external": "This signer must sign with the external CA (VNPT SmartCA).",
+  "ca-designated-note": "You are designated to sign with VNPT SmartCA on the phone app.",
+  "national-id": "National ID (CCCD)",
+  "enter-national-id": "Enter CCCD/ID number"
 }

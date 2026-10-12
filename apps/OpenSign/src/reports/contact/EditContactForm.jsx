@@ -12,7 +12,8 @@ const EditContactForm = (props) => {
     Email: "",
     Phone: "",
     Company: "",
-    JobTitle: ""
+    JobTitle: "",
+    NationalId: ""
   });
   useEffect(() => {
     if (props.contact?.Email) {
@@ -43,6 +44,7 @@ const EditContactForm = (props) => {
           phone: formData?.Phone,
           company: formData?.Company,
           jobTitle: formData?.JobTitle,
+          nationalId: formData?.NationalId,
           tenantId: localStorage.getItem("TenantId")
         };
         const res = await Parse.Cloud.run("editcontact", params);
@@ -52,7 +54,8 @@ const EditContactForm = (props) => {
           Email: formData.Email,
           Phone: formData?.Phone,
           Company: formData?.Company,
-          JobTitle: formData?.JobTitle
+          JobTitle: formData?.JobTitle,
+          NationalId: formData?.NationalId
         };
         props.handleEditContact(updateContact);
       } catch (err) {
@@ -153,6 +156,20 @@ const EditContactForm = (props) => {
               onChange={(e) => handleChange(e)}
               className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
               placeholder={t("phone-optional")}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="NationalId" className="block text-xs font-semibold">
+              {t("national-id")}
+            </label>
+            <input
+              type="text"
+              id="NationalId"
+              name="NationalId"
+              value={formData.NationalId || ""}
+              onChange={(e) => handleChange(e)}
+              className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
+              placeholder={t("enter-national-id")}
             />
           </div>
           <div className="mt-4 flex gap-x-2 justify-start">

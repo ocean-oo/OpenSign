@@ -15,6 +15,7 @@ const AddContact = (props) => {
   const [email, setEmail] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [addYourself, setAddYourself] = useState(false);
   const [isLoader, setIsLoader] = useState(false);
   const [isUserExist, setIsUserExist] = useState(false);
@@ -84,7 +85,7 @@ const AddContact = (props) => {
                 {
                   "X-Parse-Session-Token": localStorage.getItem("accesstoken")
                 };
-          const data = { name, email, phone, tenantId, jobTitle, company };
+          const data = { name, email, phone, tenantId, jobTitle, company, nationalId };
           const headers = {
             "Content-Type": "application/json",
             "X-Parse-Application-Id": localStorage.getItem("parseAppId"),
@@ -133,6 +134,7 @@ const AddContact = (props) => {
     setEmail("");
     setJobTitle("");
     setCompany("");
+    setNationalId("");
   };
 
   return (
@@ -246,6 +248,21 @@ const AddContact = (props) => {
                   // disabled={addYourself}
                   className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
                   placeholder={t("phone-optional")}
+                />
+              </div>
+              <div className="mb-[0.75rem]">
+                <label htmlFor="nationalId" className="text-[13px]">
+                  {t("national-id")}
+                </label>
+                <input
+                  type="text"
+                  id="nationalId"
+                  value={nationalId}
+                  onChange={(e) =>
+                    setNationalId(e.target.value?.replace(/\s/g, ""))
+                  }
+                  className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
+                  placeholder={t("enter-national-id")}
                 />
               </div>
             </>

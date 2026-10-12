@@ -981,13 +981,20 @@ function PlaceHolderSign() {
     // keep only non-prefill signers
     const filterPrefill = (signerPos ?? []).filter((s) => s.Role !== "prefill");
 
+    // External-CA signers need no signature widget, but must place at least
+    // MIN_CA_WIDGETS position boxes (reserved for future PAdES appearance).
+    const caNeedingWidgets = filterPrefill?.filter(
+      (s) =>
+        s.signWithCA &&
+        utils?.countSignerWidgets(s) < (utils?.MIN_CA_WIDGETS || 2)
+    );
     //checking all signers placeholder exist or not
     const isPlaceholderExist =
       filterPrefill?.length > 0 &&
       filterPrefill.some((data) => data.placeHolder);
     // signers who don't have a signature widget (or have no placeholders at all)
     const unassignedWidget = filterPrefill?.filter(
-      (s) => !utils?.hasSignatureWidget(s)
+      (s) => !s.signWithCA && !utils?.hasSignatureWidget(s)
     );
 
     //checking if there are any signer list which do not have signture widget then show signers name on tour messages
@@ -1002,7 +1009,11 @@ function PlaceHolderSign() {
       setRoleName("");
     }
 
-    if (prefillExist && isPrefillEmpty) {
+    if (caNeedingWidgets && caNeedingWidgets.length > 0) {
+      alert(t("ca-min-widgets"));
+      setUniqueId(caNeedingWidgets[0]?.Id);
+      setRoleName("");
+    } else if (prefillExist && isPrefillEmpty) {
       setIsSendAlert({ mssg: "prefill", alert: true });
       setUnSignedWidgetId(unfilledTextWidgetId);
     } else if (signersdata?.length === 0) {

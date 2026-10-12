@@ -794,12 +794,23 @@ const TemplatePlaceholder = () => {
     // keep only non-prefill signers
     const filterPrefill = (signerPos ?? []).filter((s) => s.Role !== "prefill");
 
+    // External-CA signers need no signature widget, but must place at least
+    // MIN_CA_WIDGETS position boxes (reserved for future PAdES appearance).
+    const caNeedingWidgets = filterPrefill?.filter(
+      (s) =>
+        s.signWithCA &&
+        utils?.countSignerWidgets(s) < (utils?.MIN_CA_WIDGETS || 2)
+    );
     // signers who don't have a signature widget (or have no placeholders at all)
     const unassignedWidget = filterPrefill?.filter(
-      (s) => !utils?.hasSignatureWidget(s)
+      (s) => !s.signWithCA && !utils?.hasSignatureWidget(s)
     );
 
-    if (unassignedWidget?.length > 0) {
+    if (caNeedingWidgets?.length > 0) {
+      alert(t("ca-min-widgets"));
+      setUniqueId(caNeedingWidgets[0]?.Id);
+      setRoleName("");
+    } else if (unassignedWidget?.length > 0) {
       const signersName = unassignedWidget
         ?.map((x) => signersdata.find((y) => y.Id === x.Id)?.Role)
         ?.join(", ");

@@ -262,6 +262,41 @@ const RecipientList = (props) => {
                   <i className="fa-light fa-trash-can 2xl:text-[22px]"></i>
                 </div>
               )}
+              {obj?.Role !== "prefill" &&
+                props.setSignerPos &&
+                props.setSignersData && (
+                  <label
+                    title={t("ca-sign-toggle")}
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-2 flex items-center gap-1 cursor-pointer text-[11px] font-bold text-base-content"
+                  >
+                    <input
+                      type="checkbox"
+                      className="op-checkbox op-checkbox-xs"
+                      checked={Boolean(obj.signWithCA)}
+                      onChange={(e) => {
+                        const on = e.target.checked;
+                        props.setSignersData((prev) =>
+                          (prev || []).map((x) =>
+                            x.Id === obj.Id ? { ...x, signWithCA: on } : x
+                          )
+                        );
+                        props.setSignerPos((prev) =>
+                          (prev || []).map((x) =>
+                            x.Id === obj.Id ? { ...x, signWithCA: on } : x
+                          )
+                        );
+                      }}
+                    />
+                    <span
+                      className={
+                        obj.signWithCA ? "text-blue-600" : "opacity-60"
+                      }
+                    >
+                      CA
+                    </span>
+                  </label>
+                )}
               <hr />
             </div>
           );

@@ -45,6 +45,9 @@ function UserProfile() {
   const [jobTitle, setJobTitle] = useState(
     extendUser && extendUser?.[0]?.JobTitle
   );
+  const [nationalId, setNationalId] = useState(
+    extendUser && extendUser?.[0]?.NationalId
+  );
   const [isVerifyModal, setIsVerifyModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpLoader, setOtpLoader] = useState(false);
@@ -137,6 +140,7 @@ function UserProfile() {
         Name: obj.Name,
         JobTitle: jobTitle,
         Company: company,
+        NationalId: nationalId || "",
         Language: obj?.language || "",
       };
 
@@ -419,6 +423,26 @@ function UserProfile() {
                   />
                 ) : (
                   <span>{extendUser?.[0]?.JobTitle}</span>
+                )}
+              </li>
+              <li
+                className={`flex justify-between items-center border-b-[1px] border-gray-300 break-all ${
+                  editmode ? "py-1.5" : "py-2"
+                }`}
+              >
+                <span className="font-semibold">{t("national-id")}:</span>{" "}
+                {editmode ? (
+                  <input
+                    type="text"
+                    value={nationalId || ""}
+                    className="op-input op-input-bordered op-input-sm w-[180px] focus:outline-none hover:border-base-content text-sm"
+                    placeholder={t("enter-national-id")}
+                    onChange={(e) =>
+                      setNationalId(e.target.value?.replace(/\s/g, ""))
+                    }
+                  />
+                ) : (
+                  <span>{extendUser?.[0]?.NationalId}</span>
                 )}
               </li>
               <li className="flex justify-between items-center border-b-[1px] border-gray-300 py-2 break-all">

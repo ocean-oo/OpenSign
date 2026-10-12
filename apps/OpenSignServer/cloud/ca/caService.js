@@ -2,10 +2,13 @@
 // Phase 1: CEO-only gating lives here (server-authoritative).
 
 import crypto from 'node:crypto';
-import { getCaConfig, canInitiateProvider, PROVIDER_LABELS } from './caConfig.js';
+import { getCaConfig, canInitiateProvider, PROVIDER_LABELS, SUPPORTED_PROVIDERS } from './caConfig.js';
 import { getCaProvider, CaError } from './CaProvider.js';
+import { findPlaceholderIndex, findPendingPriorSigner } from '../../utils/workflowUtils.js';
 
 export const CA_CLASS = 'CaTransaction';
+// Signer CA phải đặt tối thiểu 2 ô vị trí ký (để dành nhúng appearance PAdES sau này).
+export const MIN_CA_WIDGETS = 2;
 
 export function formatVnTime(iso) {
   try {
@@ -52,6 +55,90 @@ export function buildAppearance({ signerName, signerTitle, signTimeIso, certSeri
 
 function master() {
   return { useMasterKey: true };
+}
+
+// Resolve who may CA-sign this document:
+// - designation: placeholder.signWithCA (+ caProvider) set at authoring,
+//   inherited from template;
+// - identity: CCCD from contactbook/profile (env fallback), pointer class.
+// CEO-listed users bypass designation but still wait their turn.
+async function resolveCaSigner(documentId, userId) {
+  const doc = await new Parse.Query('contracts_Document').get(String(documentId), master());
+  if (!doc) throw new CaError('INVALID_DOC', 'Document not found.');
+  const j = doc.toJSON();
+  if (j.IsCompleted || j.IsDeclined || j.IsArchive) {
+    throw new CaError('INVALID_DOC', 'Document is no longer signable.');
+  }
+  const placeholders = Array.isArray(j.Placeholders) ? j.Placeholders : [];
+  const uid = String(userId);
+
+  let linkedContactIds = [];
+  try {
+    const cq = new Parse.Query('contracts_Contactbook');
+    cq.equalTo('UserId', { __type: 'Pointer', className: '_User', objectId: uid });
+    linkedContactIds = (await cq.find(master())).map(c => c.id);
+  } catch {
+    /* best effort */
+  }
+  const candidates = [uid, ...linkedContactIds];
+  const placeholder =
+    placeholders.find(
+      p => p?.Role !== 'prefill' && candidates.includes(String(p?.signerObjId || ''))
+    ) || null;
+
+  const getById = async (cls, id) => {
+    try {
+      return (await new Parse.Query(cls).get(String(id), master())).toJSON();
+    } catch {
+      return null;
+    }
+  };
+  let contact = placeholder?.signerObjId ? await getById('contracts_Contactbook', placeholder.signerObjId) : null;
+  let className = 'contracts_Users';
+  let contactId = placeholder?.signerObjId || null;
+  let nationalId = '';
+  if (contact?.NationalId) {
+    nationalId = String(contact.NationalId);
+    className = 'contracts_Contactbook';
+  }
+  if (!nationalId) {
+    let ext =
+      (contactId && (await getById('contracts_Users', contactId))) ||
+      (await getById('contracts_Users', uid)) ||
+      (contact?.UserId?.objectId && (await getById('contracts_Users', contact.UserId.objectId)));
+    if (ext?.NationalId) {
+      nationalId = String(ext.NationalId);
+      if (!contact) className = 'contracts_Users';
+      else className = 'contracts_Contactbook';
+    }
+  }
+  if (!nationalId) {
+    // Last resort: match contactbook by signer email.
+    const emails = [
+      placeholder?.email,
+      ...((j.Signers || [])
+        .filter(s => String(s.objectId) === String(placeholder?.signerObjId))
+        .map(s => s.Email))
+    ]
+      .map(e => String(e || '').toLowerCase().trim())
+      .filter(Boolean);
+    for (const email of emails) {
+      try {
+        const q = new Parse.Query('contracts_Contactbook');
+        q.equalTo('Email', email);
+        const hit = await q.first(master());
+        if (hit?.toJSON()?.NationalId) {
+          nationalId = String(hit.toJSON().NationalId);
+          className = 'contracts_Contactbook';
+          contactId = contactId || hit.id;
+          break;
+        }
+      } catch {
+        /* best effort */
+      }
+    }
+  }
+  return { doc: j, placeholder, nationalId, className, contactId };
 }
 
 async function findTransaction(tranId) {
@@ -106,18 +193,56 @@ export async function initiateCaSign({
   const userId = user?.id || user?.objectId || null;
   if (!userId) throw new CaError('FORBIDDEN', 'Authentication required.');
   if (!documentId) throw new CaError('INVALID_DOC', 'documentId is required.');
-  const gate = canInitiateProvider(userId, String(provider).toLowerCase(), config);
-  if (!gate.ok) throw new CaError('FORBIDDEN', gate.reason);
 
   const name = String(provider).toLowerCase();
+  if (!config.enabled) {
+    throw new CaError('FORBIDDEN', 'CA integration is disabled (CA_ENABLED=false).');
+  }
+  if (!SUPPORTED_PROVIDERS.includes(name)) {
+    throw new CaError('FORBIDDEN', `Unsupported CA provider "${provider}".`);
+  }
   const adapter = getCaProvider(name, config);
+
+  // Per-document designation (inherited from template) or CEO-list backdoor.
+  const ctx = await resolveCaSigner(documentId, userId);
+  const designated = Boolean(ctx.placeholder?.signWithCA);
+  const gate = canInitiateProvider(userId, name, config);
+  if (!designated && !gate.ok) {
+    throw new CaError(
+      'FORBIDDEN',
+      'Only a signer designated for external CA signing (or a CEO-listed account) may initiate.'
+    );
+  }
+  if (designated) {
+    const expected = String(ctx.placeholder?.caProvider || 'vnpt').toLowerCase();
+    if (name !== expected) {
+      throw new CaError('FORBIDDEN', `This signer is designated to sign with ${expected}.`);
+    }
+  }
+  // Sequential order: a CA signer waits for prior signers like everyone else.
+  if (ctx.doc.SendInOrderStrict === true && ctx.placeholder?.signerObjId) {
+    const myIdx = findPlaceholderIndex(ctx.doc.Placeholders || [], ctx.placeholder.signerObjId);
+    const pending =
+      myIdx > 0 ? findPendingPriorSigner(ctx.doc.Placeholders || [], myIdx, ctx.doc.AuditTrail) : null;
+    if (pending) {
+      throw new CaError('NOT_YOUR_TURN', 'Previous signers have not signed yet. Please wait for your turn.');
+    }
+  }
+  const nationalId = ctx.nationalId || (name === 'vnpt' ? config.vnpt.userId : '');
+  if (!nationalId) {
+    throw new CaError(
+      'NO_CCCD',
+      'CCCD/CMND is missing for this signer. Please fill CCCD in Contactbook or user profile.'
+    );
+  }
+
   const docHash = computeDocHash({ documentId, signerId: userId });
 
   let created;
   try {
     created = await adapter.createTransaction({
       docHash,
-      signer: { id: userId, name: signerName },
+      signer: { id: userId, name: signerName, nationalId },
       appearance: { page, rect },
       ttlMin: config.ttlMin
     });
@@ -130,6 +255,8 @@ export async function initiateCaSign({
   tx.set('provider', name);
   tx.set('documentId', String(documentId));
   tx.set('signerId', String(userId));
+  tx.set('signerContactId', ctx.contactId ? String(ctx.contactId) : '');
+  tx.set('signerClass', ctx.className);
   tx.set('docHash', docHash);
   tx.set('tranId', created.tranId);
   tx.set('deepLinkUrl', created.deepLinkUrl);
@@ -279,8 +406,21 @@ export async function completeCaSign({ tranId, user, signerName = '', signerTitl
     const doc = new Parse.Object('contracts_Document');
     doc.id = String(tx.get('documentId'));
     const label = PROVIDER_LABELS[tx.get('provider')] || tx.get('provider');
+    // Activity 'Signed' (not a custom one) so completion counting and
+    // strict-order gating treat the CA step exactly like an internal signature.
+    // UserPtr is REQUIRED: findPendingPriorSigner matches audit entries to
+    // placeholders by UserPtr.objectId === signerObjId.
     doc.add('AuditTrail', {
-      Activity: `Signed with ${label}`,
+      Activity: 'Signed',
+      UserPtr: {
+        __type: 'Pointer',
+        className: tx.get('signerClass') || 'contracts_Contactbook',
+        objectId: tx.get('signerContactId') || String(userId)
+      },
+      SignedUrl: '',
+      SignedOn: sig.signTime ? new Date(sig.signTime) : new Date(),
+      caProvider: tx.get('provider'),
+      caLabel: label,
       tranId: tx.get('tranId'),
       tranCode: tx.get('tranCode') || undefined,
       docCode: tx.get('docCode') || undefined,

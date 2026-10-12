@@ -2,6 +2,7 @@ export default async function editContact(request) {
   const { contactId, name, email, phone, tenantId } = request.params;
   const company = request.params?.company;
   const jobTitle = request.params?.jobTitle;
+  const nationalId = request.params?.nationalId;
   if (!request?.user) {
     throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User is not authenticated.');
   }
@@ -32,6 +33,9 @@ export default async function editContact(request) {
       }
       if (jobTitle) {
         contactQuery.set('JobTitle', jobTitle);
+      }
+      if (nationalId) {
+        contactQuery.set('NationalId', String(nationalId).trim());
       }
       contactQuery.set('Email', email?.toLowerCase()?.replace(/\s/g, ''));
       contactQuery.set('UserRole', 'contracts_Guest');

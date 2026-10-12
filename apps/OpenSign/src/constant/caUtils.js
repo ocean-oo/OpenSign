@@ -1,10 +1,8 @@
-// Client helpers for external CA signing (QR + Deeplink, Phase 1 CEO-only).
-// Server enforces CEO gating; these helpers only hide the button early.
-
-export const CA_PROVIDERS = [
-  { value: 'vnpt', label: 'VNPT SmartCA' },
-  { value: 'viettel', label: 'Viettel MySign' }
-];
+// Client helpers for external CA signing (per-document designation).
+// Server enforces designation/order/identity; these helpers only hide UI early.
+// NOTE: only VNPT is supported for now — Viettel stays stubbed server-side
+// and is hidden here until test credentials arrive.
+export const CA_PROVIDERS = [{ value: 'vnpt', label: 'VNPT SmartCA' }];
 
 if (String(process.env.REACT_APP_CA_SHOW_MOCK || '').toLowerCase() === 'true') {
   CA_PROVIDERS.push({ value: 'mock', label: 'Mock CA (dev)' });

@@ -69,6 +69,8 @@ import Loader from "../primitives/Loader";
 import PdfDeclineModal from "../primitives/PdfDeclineModal";
 import { serverUrl_fn } from "../constant/appinfo";
 import AgreementSign from "../components/pdf/AgreementSign";
+import CaSignModal from "../components/ca/CaSignModal";
+import { isCaEnabled } from "../constant/caUtils";
 import WidgetComponent from "../components/pdf/WidgetComponent";
 import PlaceholderCopy from "../components/pdf/PlaceholderCopy";
 import TextFontSetting from "../components/pdf/TextFontSetting";
@@ -113,6 +115,7 @@ function PdfRequestFiles(
   const [isUiLoading, setIsUiLoading] = useState(false);
   const [isDecline, setIsDecline] = useState({ isDeclined: false });
   const [currentSigner, setCurrentSigner] = useState(false);
+  const [caOpen, setCaOpen] = useState(false);
   const [isAlert, setIsAlert] = useState({ isShow: false, alertMessage: "" });
   const [unSignedWidgetId, setUnSignedWidgetId] = useState("");
   const [expiredDate, setExpiredDate] = useState("");
@@ -999,9 +1002,27 @@ function PdfRequestFiles(
     }
   }
   const handleSignPdf = async () => {
+    // External-CA designated signers must use the CA app (server also blocks).
+    if (isCaSigner) {
+      alert(t("ca-must-sign-external"));
+      return;
+    }
     setIsUiLoading(true);
       await embedWidgetsData();
   };
+
+  // Current signer's placeholder (designation flag comes from authoring/template).
+  const currentPlaceholder = (signerPos || []).find(
+    (p) =>
+      p?.Role !== "prefill" &&
+      (p?.signerObjId === signerObjectId ||
+        (uniqueId && p?.Id === uniqueId))
+  );
+  const isCaSigner =
+    isCaEnabled() && Boolean(currentPlaceholder?.signWithCA);
+  const caSignerName =
+    (unsignedSigners || []).find((u) => u.objectId === signerObjectId)
+      ?.Name || currentPlaceholder?.Role || "";
 
   //function for save x and y position and show signature  tab on that position
   const handleTabDrag = (key) => {
@@ -1826,6 +1847,36 @@ function PdfRequestFiles(
                     showFirstWidget={showFirstWidget}
                   />
                 )}
+              {isAgree &&
+                currentSigner &&
+                isCaSigner &&
+                !alreadySign &&
+                !isExpired &&
+                !isCompleted?.isCertificate &&
+                !isDecline?.isDeclined && (
+                  <div className="mx-2 my-3 p-3 op-card bg-base-100 text-center">
+                    <p className="text-[13px] mb-2">
+                      {t("ca-designated-note")}
+                    </p>
+                    <button
+                      onClick={() => setCaOpen(true)}
+                      className="op-btn op-btn-primary w-full"
+                    >
+                      {t("ca-sign-external")}
+                    </button>
+                  </div>
+                )}
+              <CaSignModal
+                isOpen={caOpen}
+                onClose={() => setCaOpen(false)}
+                Parse={Parse}
+                documentId={documentId}
+                signerName={caSignerName}
+                signerTitle="CEO"
+                page={1}
+                rect={null}
+                onSigned={() => window.location.reload()}
+              />
               {isCelebration && (
                 <div className="relative z-[1000]">
                   <Confetti
@@ -2224,6 +2275,7 @@ function PdfRequestFiles(
                         })()}
                       {(defaultSignImg || myInitial) &&
                         !alreadySign &&
+                        !isCaSigner &&
                         currentSigner && (
                           <DefaultSignature
                             userObjectId={signerObjectId}
@@ -2242,6 +2294,7 @@ function PdfRequestFiles(
                     {pdfDetails[0]?.AllowModifications &&
                       currentSigner &&
                       !alreadySign &&
+                      !isCaSigner &&
                         (
                         <div data-tut="reactourFourth">
                           <WidgetComponent

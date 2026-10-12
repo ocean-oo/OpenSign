@@ -1634,5 +1634,11 @@
   "ca-status-failed": "Không lấy được trạng thái CA.",
   "ca-complete-failed": "Không hoàn tất ký CA.",
   "ca-legal-note": "Mã tài liệu ở đây phải trùng với mã hiển thị trên app CA trước khi phê duyệt.",
-  "ca-tran-code": "Đối chiếu mã này trong app CA"
+  "ca-tran-code": "Đối chiếu mã này trong app CA",
+  "ca-sign-toggle": "Ký bằng CA ngoài (VNPT)",
+  "ca-min-widgets": "Người ký CA cần đặt ít nhất 2 ô vị trí ký.",
+  "ca-must-sign-external": "Người ký này phải ký bằng chữ ký số CA ngoài (VNPT SmartCA).",
+  "ca-designated-note": "Bạn được chỉ định ký bằng VNPT SmartCA trên app điện thoại.",
+  "national-id": "CCCD/CMND",
+  "enter-national-id": "Nhập số CCCD/CMND"
 }

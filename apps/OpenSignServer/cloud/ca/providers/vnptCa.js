@@ -8,7 +8,8 @@
 //
 // Auth: per-request sp_id / sp_password (env VNPT_CA_SP_ID/_PASSWORD,
 // falling back to VNPT_CA_CLIENT_ID/_SECRET when VNPT issues one pair).
-// Phase 1: single CEO signer identified by VNPT_CA_USER_ID (CCCD/MST).
+// Signer identity (CCCD/MST) arrives per-transaction from contactbook or
+// user profile (resolved by caService); VNPT_CA_USER_ID is only a fallback.
 
 import crypto from 'node:crypto';
 import axios from 'axios';
@@ -20,7 +21,9 @@ function missingEnv(cfg) {
   if (!cfg.baseUrl) missing.push('VNPT_CA_BASE_URL');
   if (!cfg.spId) missing.push('VNPT_CA_SP_ID (or VNPT_CA_CLIENT_ID)');
   if (!cfg.spPassword) missing.push('VNPT_CA_SP_PASSWORD (or VNPT_CA_CLIENT_SECRET)');
-  if (!cfg.userId) missing.push('VNPT_CA_USER_ID (CEO CCCD/MST)');
+  // NOTE: no VNPT_CA_USER_ID requirement here — the signer CCCD arrives
+  // per-transaction (contactbook/profile resolved by caService); the env
+  // value is only a fallback for ad-hoc/CEO flows.
   return missing;
 }
 
@@ -124,7 +127,15 @@ export class VnptSmartCaProvider extends CaProvider {
   async createTransaction({ docHash, signer, ttlMin } = {}) {
     this._assertConfigured();
     if (!docHash) throw new CaError('INVALID_HASH', 'vnpt: docHash is required');
-    const userId = this.cfg.userId;
+    // Per-signer CCCD (resolved from contactbook/profile by caService);
+    // env VNPT_CA_USER_ID is only a fallback for ad-hoc flows.
+    const userId = signer?.nationalId || this.cfg.userId;
+    if (!userId) {
+      throw new CaError(
+        'NO_CCCD',
+        'vnpt: signer CCCD is missing. Fill CCCD in Contactbook or user profile.'
+      );
+    }
     const transactionId = crypto.randomUUID();
     // doc_id must be shown on BOTH the SP UI and the CA approval app so the
     // user can match them before confirming (QD769 §4.2/§4.4).

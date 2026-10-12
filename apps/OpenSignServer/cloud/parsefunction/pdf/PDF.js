@@ -426,6 +426,19 @@ async function PDF(req) {
       className = 'contracts_Users';
       signUser = _resDoc.ExtUserPtr;
     }
+    // External-CA designated signers must not sign in-app (hard block —
+    // hiding the UI button alone can be bypassed). They sign via the CA app;
+    // completion arrives as a 'Signed' audit entry from caComplete.
+    if (reqUserId) {
+      const _phs = Array.isArray(_resDoc.Placeholders) ? _resDoc.Placeholders : [];
+      const _myPhIdx = findPlaceholderIndex(_phs, reqUserId);
+      if (_myPhIdx >= 0 && _phs[_myPhIdx]?.signWithCA) {
+        throw new Parse.Error(
+          Parse.Error.OPERATION_FORBIDDEN,
+          'This signer is designated to sign with an external CA (VNPT SmartCA). Please use the CA signing option.'
+        );
+      }
+    }
     // Strict-order gating: when both `SendinOrder` and `SendInOrderStrict`
     // are enabled the document creator wants the signing flow locked to a
     // strict sequence — a signer/approver may only act once every previous

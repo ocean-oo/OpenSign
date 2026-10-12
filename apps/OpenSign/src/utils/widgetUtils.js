@@ -72,6 +72,12 @@ export const hasSignatureWidget = (s) => {
   );
 };
 
+// External-CA signers skip the signature-widget requirement but must place
+// at least MIN_CA_WIDGETS position boxes (reserved for future PAdES appearance).
+export const MIN_CA_WIDGETS = 2;
+export const countSignerWidgets = (s) =>
+  (s.placeHolder ?? []).reduce((n, ph) => n + ((ph?.pos ?? []).length), 0);
+
 export const widgetNamesArr = (placeholders, signerId) => {
   const widgetNames =
     placeholders?.length > 0
