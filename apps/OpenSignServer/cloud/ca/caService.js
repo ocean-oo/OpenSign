@@ -87,6 +87,9 @@ function toEnvelope(tx) {
     signTime: tx.get('signTime') || null,
     errorCode: tx.get('errorCode') || null,
     errorMessage: tx.get('errorMessage') || null,
+    // Provider match codes (VNPT tran_code/doc_id) for the approval app.
+    tranCode: tx.get('tranCode') || null,
+    docCode: tx.get('docCode') || null,
     objectId: j.objectId || tx.id
   };
 }
@@ -136,6 +139,12 @@ export async function initiateCaSign({
   tx.set('signPage', Number(page) || 1);
   if (rect) tx.set('signRect', rect);
   tx.set('rawRequest', created.raw || {});
+  // Generic passthrough for provider match codes (strings only).
+  if (created.extra && typeof created.extra === 'object') {
+    for (const [k, v] of Object.entries(created.extra)) {
+      if (typeof v === 'string' && v) tx.set(k, v);
+    }
+  }
   const acl = new Parse.ACL();
   try {
     acl.setReadAccess(userId, true);
@@ -237,7 +246,10 @@ export async function completeCaSign({ tranId, user, signerName = '', signerTitl
   }
   let sig;
   try {
-    sig = await adapter.fetchSignature(tx.get('tranId'));
+    sig = await adapter.fetchSignature(tx.get('tranId'), {
+      userId: tx.get('vnptUserId') || undefined,
+      serial: tx.get('vnptSerial') || undefined
+    });
   } catch (e) {
     throw new CaError(e?.code || 'PROVIDER_ERROR', e?.message || 'Failed to fetch signature.');
   }
@@ -270,6 +282,8 @@ export async function completeCaSign({ tranId, user, signerName = '', signerTitl
     doc.add('AuditTrail', {
       Activity: `Signed with ${label}`,
       tranId: tx.get('tranId'),
+      tranCode: tx.get('tranCode') || undefined,
+      docCode: tx.get('docCode') || undefined,
       certSerial: sig.certSerial,
       signTime: sig.signTime,
       padesLevel: config.padesLevel,

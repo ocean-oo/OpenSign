@@ -1633,5 +1633,6 @@
   "ca-initiate-failed": "Could not create CA signing request.",
   "ca-status-failed": "Could not fetch CA status.",
   "ca-complete-failed": "Could not complete CA signing.",
-  "ca-legal-note": "The document code shown here must match the code in the CA app before approving."
+  "ca-legal-note": "The document code shown here must match the code in the CA app before approving.",
+  "ca-tran-code": "Match this code in the CA app"
 }

@@ -10,9 +10,11 @@ export class CaError extends Error {
 }
 
 // Interface contract every provider implements:
-// - createTransaction({ docHash, signer, appearance, ttlMin }) -> { tranId, deepLinkUrl, qrPayload, expiresAt, raw }
-// - getStatus(tranId) -> { status, raw }
-// - fetchSignature(tranId) -> { signatureValue, certChain, tsaToken, signTime, certSerial, raw }
+// - createTransaction({ docHash, signer, appearance, ttlMin }) -> { tranId, deepLinkUrl, qrPayload, expiresAt, raw, extra? }
+//   (extra: provider-specific scalar fields persisted on CaTransaction, e.g. tranCode)
+// - getStatus(tranId, opts?) -> { status, raw }
+// - fetchSignature(tranId, opts?) -> { signatureValue, certChain, tsaToken, signTime, certSerial, raw }
+//   (opts: stored per-transaction context such as { userId, serial })
 // - verifyCallback({ body, headers }) -> { tranId, status, valid }
 export class CaProvider {
   constructor(name) {

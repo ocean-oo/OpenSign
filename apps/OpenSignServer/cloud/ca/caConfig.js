@@ -30,6 +30,17 @@ export function getCaConfig(env = process.env) {
       baseUrl: (env.VNPT_CA_BASE_URL || '').replace(/\/+$/, ''),
       clientId: env.VNPT_CA_CLIENT_ID || '',
       clientSecret: env.VNPT_CA_CLIENT_SECRET || '',
+      // QD769 v1 APIs authenticate per-request with sp_id / sp_password.
+      // When VNPT issues a single credential pair it usually works for both;
+      // explicit SP vars take precedence, client vars are the fallback.
+      spId: env.VNPT_CA_SP_ID || env.VNPT_CA_CLIENT_ID || '',
+      spPassword: env.VNPT_CA_SP_PASSWORD || env.VNPT_CA_CLIENT_SECRET || '',
+      // Phase 1: CCCD/MST of the single CEO signer whose cert is used.
+      userId: env.VNPT_CA_USER_ID || '',
+      // Optional: pin a cert when the user owns several. Otherwise first cert.
+      serial: env.VNPT_CA_SERIAL || '',
+      // Partner mobile code issued with the account (used by SmartCA app flows).
+      mobileCode: env.VNPT_CA_MOBILE_CODE || '',
       env: env.VNPT_CA_ENV || 'development',
       callbackUrl: env.VNPT_CA_CALLBACK_URL || '',
       timeoutMs: Number(env.VNPT_CA_TIMEOUT_MS || 300000)

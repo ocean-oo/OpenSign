@@ -23,8 +23,14 @@ on first save (allowClientClassCreation=false still permits master-key saves).
 
 ## Real-CA wiring checklist (when creds arrive)
 
-1. Fill `*_BASE_URL/_CLIENT_ID/_CLIENT_SECRET/_CALLBACK_URL`, whitelist the callback URL in the partner portal.
-2. Map `createTransaction/getStatus/fetchSignature` in `vnptCa.js` / `viettelCa.js` to the real endpoints.
-3. Verify `verifyCallback()` HMAC scheme against the real spec.
-4. Replace `computeDocHash()` in `caService.js` with real PDF-byte hashing if the CA mandates it.
-5. UAT: QR opens app, doc code matches SP+app, Adobe/Foxit shows valid + timestamp + LTV.
+1. Fill `VNPT_CA_BASE_URL` (= UAT `https://rmgateway.vnptit.vn/sca/sp769`),
+   `VNPT_CA_CLIENT_ID/_SECRET` (emailed pair; doubles as sp_id/sp_password
+   unless VNPT issues separate `VNPT_CA_SP_ID/_PASSWORD`), `VNPT_CA_USER_ID`
+   (CEO CCCD, e.g. `089099014377`), optional `VNPT_CA_SERIAL`.
+2. `vnptCa.js` implements QD769 v1 (`get_certificate` -> `sign` ->
+   `sign/{id}/status`, webhook §4.4 with sp_id check). Verified live against
+   UAT with dummy creds: transport + 401 error mapping + callback verify OK.
+3. Remaining for full e2e: approved test cert (order `HNI/LD/261012/00104`
+   still pending) + confirm emailed pair works as sp_id/sp_password.
+4. PAdES byte-embedding still open: `computeDocHash()` hashes IDs, not PDF
+   bytes. When wiring embedding, hash real PDF bytes and replace ONLY it.

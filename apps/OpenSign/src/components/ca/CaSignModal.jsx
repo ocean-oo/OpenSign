@@ -157,10 +157,20 @@ function CaSignModal(props) {
               <img src={qrImg} alt='CA QR' width={200} height={200} className='border rounded' />
             )}
             <p className='text-center text-base-content'>{t('ca-waiting-app')}</p>
+            {(data.tranCode || data.docCode) && (
+              <p className='text-center font-medium'>
+                {t('ca-tran-code')}: {data.tranCode || data.docCode}
+                {data.tranCode && data.docCode && data.tranCode !== data.docCode
+                  ? ` / ${data.docCode}`
+                  : ''}
+              </p>
+            )}
             <div className='flex gap-2 w-full'>
-              <a href={data.deepLinkUrl} className='op-btn op-btn-secondary flex-1 text-center'>
-                {t('ca-open-app')}
-              </a>
+              {data.deepLinkUrl ? (
+                <a href={data.deepLinkUrl} className='op-btn op-btn-secondary flex-1 text-center'>
+                  {t('ca-open-app')}
+                </a>
+              ) : null}
               <button onClick={copyLink} className='op-btn op-btn-ghost flex-1'>
                 {copied ? t('ca-copied') : t('ca-copy-link')}
               </button>

@@ -1633,5 +1633,6 @@
   "ca-initiate-failed": "Không tạo được yêu cầu ký CA.",
   "ca-status-failed": "Không lấy được trạng thái CA.",
   "ca-complete-failed": "Không hoàn tất ký CA.",
-  "ca-legal-note": "Mã tài liệu ở đây phải trùng với mã hiển thị trên app CA trước khi phê duyệt."
+  "ca-legal-note": "Mã tài liệu ở đây phải trùng với mã hiển thị trên app CA trước khi phê duyệt.",
+  "ca-tran-code": "Đối chiếu mã này trong app CA"
 }
