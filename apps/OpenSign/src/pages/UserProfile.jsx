@@ -88,6 +88,11 @@ function UserProfile() {
     let phn = Phone,
       res = "";
     if (!res) {
+      if (!UserProfile?.objectId) {
+        alert(t("something-went-wrong-mssg"));
+        console.error("UserProfile missing UserInformation in localStorage");
+        return;
+      }
       setIsLoader(true);
       try {
         const userQuery = Parse.Object.extend("_User");
@@ -98,23 +103,28 @@ function UserProfile() {
           object.set("phone", phn || "");
           object.save().then(
             async (response) => {
-              if (response) {
-                let res = response.toJSON();
-                let rr = JSON.stringify(res);
-                localStorage.setItem("UserInformation", rr);
-                SetName(res.name);
-                SetPhone(res?.phone || "");
-                setImage(res.ProfilePic);
-                localStorage.setItem("username", res.name);
-                localStorage.setItem("profileImg", res.ProfilePic);
-                await updateExtUser({
-                  Name: res.name,
-                  Phone: res?.phone || ""
-                });
-                alert(t("profile-update-alert"));
-                setEditMode(false);
+              try {
+                if (response) {
+                  let res = response.toJSON();
+                  let rr = JSON.stringify(res);
+                  localStorage.setItem("UserInformation", rr);
+                  SetName(res.name);
+                  SetPhone(res?.phone || "");
+                  setImage(res.ProfilePic);
+                  localStorage.setItem("username", res.name);
+                  localStorage.setItem("profileImg", res.ProfilePic);
+                  await updateExtUser({
+                    Name: res.name,
+                    Phone: res?.phone || ""
+                  });
+                  alert(t("profile-update-alert"));
+                  setEditMode(false);
+                }
+              } catch (err) {
+                console.error("Error saving profile", err);
+                alert(err?.message || t("something-went-wrong-mssg"));
+              } finally {
                 setIsLoader(false);
-                //navigate("/dashboard/35KBoSgoAK");
               }
             },
             (error) => {
@@ -125,7 +135,9 @@ function UserProfile() {
           );
         });
       } catch (error) {
-        console.log("err", error);
+        console.error("Error submitting profile", error);
+        alert(error?.message || t("something-went-wrong-mssg"));
+        setIsLoader(false);
       }
     }
   };
@@ -161,7 +173,8 @@ function UserProfile() {
       const extRes = JSON.stringify(json);
       localStorage.setItem("Extand_Class", extRes);
     } catch (err) {
-      console.log("error in save data in contracts_Users class", err);
+      console.error("error in save data in contracts_Users class", err);
+      throw err;
     }
   });
   // file upload function
